@@ -110,4 +110,86 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
         col1.markdown(f"<div class='dashboard-card'><div class='card-title'>إجمالي الإيرادات</div><div class='card-value'>{r['Revenue']:,.0f}</div></div>", unsafe_allow_html=True)
         col2.markdown(f"<div class='dashboard-card'><div class='card-title'>صافي الربح</div><div class='card-value'>{r['Net Profit']:,.0f}</div></div>", unsafe_allow_html=True)
         col3.markdown(f"<div class='dashboard-card'><div class='card-title'>هامش الربح التشغيلي</div><div class='card-value'>{r['Profit Margin']:.1f}%</div></div>", unsafe_allow_html=True)
-        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل السيولة المتدا
+        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل السيولة المتداولة</div><div class='card-value'>{r['Current Ratio']:.2f}</div></div>", unsafe_allow_html=True)
+
+        fig = px.bar(x=['الإيرادات', 'صافي الربح'], y=[r['Revenue'], r['Net Profit']], color=['الإيرادات', 'صافي الربح'], color_discrete_sequence=['#475569', '#fbbf24'])
+        fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+        # تفعيل الحقل الاحتياطي في حال حدوث خطأ 429 للسيرفر
+        if st.session_state.get('show_backup_key', False):
+            user_backup_key = st.text_input("🔑 سيرفر المنصة العام مزدحم حالياً، يرجى لصق مفتاح الـ API الخاص بك هنا للتشغيل المباشر الفوري:", type="password")
+            if user_backup_key:
+                active_api_key = user_backup_key
+
+        if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
+            if active_api_key:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={active_api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."}]}]}
+                
+                try:
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    elif res.status_code == 429:
+                        st.session_state['show_backup_key'] = True
+                        st.warning("⏱️ سيرفر Streamlit العام يواجه ضغط طلبات حالياً من جوجل. تم تفعيل 'حقل المفتاح الاحتياطي' باللون الأبيض في الأعلى، يرجى لصق مفتاحك فيه واضغط مجدداً لتخطي حظر السيرفر!")
+                        st.rerun()
+                    else:
+                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}).")
+                except Exception as e:
+                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
+            else:
+                st.error("⚠️ يرجى تزويد المنصة بمفتاح الـ API للتشغيل.")
+
+else:
+    c_col1, c_col2 = st.columns(2)
+    with c_col1: f1 = st.file_uploader("📂 ملف السنة السابقة", type="xlsx", key="prev_year")
+    with c_col2: f2 = st.file_uploader("📂 ملف السنة الحالية", type="xlsx", key="curr_year")
+    
+    if f1 and f2:
+        df1, df2 = pd.read_excel(f1), pd.read_excel(f2)
+        r1, r2 = calculate_ratios(df1), calculate_ratios(df2)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        col1.markdown(f"<div class='dashboard-card'><div class='card-title'>نمو صافي الأرباح</div><div class='card-value'>{r2['Net Profit'] - r1['Net Profit']:+,.0f}</div></div>", unsafe_allow_html=True)
+        col2.markdown(f"<div class='dashboard-card'><div class='card-title'>انحراف هامش الربح</div><div class='card-value'>{r2['Profit Margin'] - r1['Profit Margin']:+.1f}%</div></div>", unsafe_allow_html=True)
+        col3.markdown(f"<div class='dashboard-card'><div class='card-title'>تغير كفاءة السيولة</div><div class='card-value'>{r2['Current Ratio'] - r1['Current Ratio']:+.2f}</div></div>", unsafe_allow_html=True)
+        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل مديونية الحالية</div><div class='card-value'>{r2['Debt Ratio']:.1f}%</div></div>", unsafe_allow_html=True)
+
+        comp_df = pd.DataFrame({
+            'البند المالي': ['الإيرادات', 'صافي الربح'],
+            'السنة السابقة': [r1['Revenue'], r1['Net Profit']],
+            'السنة الحالية': [r2['Revenue'], r2['Net Profit']]
+        }).melt(id_vars='البند المالي', var_name='الفترة الزمنية', value_name='القيمة المالية')
+        
+        fig = px.bar(comp_df, x='البند المالي', y='القيمة المالية', color='الفترة الزمنية', barmode='group', color_discrete_sequence=['#475569', '#fbbf24'])
+        fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
+
+        if st.session_state.get('show_backup_key_comp', False):
+            user_backup_key = st.text_input("🔑 سيرفر المنصة العام مزدحم حالياً، يرجى لصق مفتاح الـ API الخاص بك هنا للتشغيل المباشر الفوري:", type="password", key="comp_key")
+            if user_backup_key:
+                active_api_key = user_backup_key
+
+        if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
+            if active_api_key:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={active_api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."}]}]}
+                
+                try:
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    elif res.status_code == 429:
+                        st.session_state['show_backup_key_comp'] = True
+                        st.warning("⏱️ سيرفر Streamlit العام يواجه ضغط طلبات حالياً من جوجل. تم تفعيل 'حقل المفتاح الاحتياطي' باللون الأبيض في الأعلى، يرجى لصق مفتاحك فيه واضغط مجدداً لتخطي حظر السيرفر!")
+                        st.rerun()
+                    else:
+                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}).")
+                except Exception as e:
+                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
+            else:
+                st.error("⚠️ يرجى تزويد المنصة بمفتاح الـ API للتشغيل.")
