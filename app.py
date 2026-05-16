@@ -3,76 +3,13 @@ import pandas as pd
 import requests
 import plotly.express as px
 
-# 1. إعدادات الصفحة الفاخرة
-st.set_page_config(page_title="Financial AI Auditor | نظام التدقيق الذكي", layout="wide")
+# 1. إعدادات الصفحة الرسمية (تضمن التوافق التام)
+st.set_page_config(page_title="Financial AI Auditor", layout="wide")
 
-# 2. حقن التنسيقات الفاخرة (Luxury Custom CSS)
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Poppins:wght@400;600&display=swap');
-    
-    /* تنسيق الجسم العام */
-    html, body, [class*="css"] {
-        font-family: 'Cairo', sans-serif;
-        text-align: right;
-        direction: rtl;
-        background-color: #f8f9fa;
-    }
-
-    /* العناوين */
-    h1, h2, h3 {
-        color: #0d1b2a !important;
-        font-weight: 700 !important;
-    }
-
-    /* تنسيق بطاقات المؤشرات (Metric Cards) */
-    [data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e0e0e0;
-        padding: 20px !important;
-        border-radius: 15px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-        border-right: 6px solid #d4af37 !important; /* لمسة ذهبية */
-    }
-    
-    [data-testid="stMetricLabel"] {
-        font-size: 18px !important;
-        color: #415a77 !important;
-    }
-
-    /* تنسيق صندوق التقرير الذكي */
-    .report-container {
-        background-color: #0d1b2a;
-        color: #e0e1dd;
-        padding: 30px;
-        border-radius: 20px;
-        border-right: 8px solid #d4af37;
-        margin-top: 20px;
-        line-height: 1.8;
-        font-size: 18px;
-        box-shadow: 0 10px 30px rgba(13, 27, 42, 0.2);
-    }
-
-    /* الأزرار */
-    .stButton>button {
-        background-color: #d4af37 !important;
-        color: #0d1b2a !important;
-        font-weight: 700 !important;
-        border-radius: 10px !important;
-        border: none !important;
-        padding: 10px 25px !important;
-        transition: all 0.3s ease !important;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
-    }
-
-    /* شريط الجانب */
-    .css-1d391kg { background-color: #0d1b2a !important; }
-    .sidebar .sidebar-content { color: white; }
-    </style>
-    """, unsafe_allow_html=True)
+# عنوان رئيسي ضخم وواضح
+st.title("🏦 Financial AI Auditor - لوحة التحكم الاحترافية")
+st.subheader("نظام الرقابة المالية الذكي | الاستشارات الاستراتيجية الآلية")
+st.markdown("---")
 
 # --- وظائف المحرك المالي ---
 def get_financial_value(df, keywords):
@@ -90,4 +27,80 @@ def calculate_ratios(df):
     rev = get_financial_value(df, ['revenue', 'sales', 'إيرادات', 'مبيعات', 'المبيعات'])
     net_profit = get_financial_value(df, ['net profit', 'net income', 'صافي الربح', 'صافي الدخل', 'الربح الصافي'])
     assets = get_financial_value(df, ['assets', 'total assets', 'أصول', 'إجمالي الأصول'])
-    liabilities = get_financial_value
+    liabilities = get_financial_value(df, ['liabilities', 'خصوم', 'التزامات'])
+    return {
+        "Revenue": rev, "Net Profit": net_profit,
+        "Profit Margin": (net_profit / rev * 100) if rev != 0 else 0,
+        "Current Ratio": (assets / liabilities) if liabilities != 0 else 0,
+        "Debt Ratio": (liabilities / assets * 100) if assets != 0 else 0
+    }
+
+# --- القائمة الجانبية المستقرة ---
+with st.sidebar:
+    st.header("⚙️ الإعدادات")
+    api_key = st.text_input("🔑 مفتاح API الخاص بك", type="password")
+    mode = st.radio("📊 نمط العمل المالي:", ["تحليل مفرد", "مقارنة سنتين"])
+    st.markdown("---")
+    st.write("يدعم القوائم باللغتين العربية والإنجليزية.")
+
+# --- المعالجة والعرض ---
+if mode == "تحليل مفرد":
+    file = st.file_uploader("📂 ارفع القائمة المالية (xlsx)", type="xlsx")
+    if file and api_key:
+        df = pd.read_excel(file)
+        r = calculate_ratios(df)
+        
+        st.markdown("### 📈 نبذة عن الأداء المالي")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("إجمالي الإيرادات", f"{r['Revenue']:,.0f}")
+        c2.metric("صافي الربح", f"{r['Net Profit']:,.0f}")
+        c3.metric("هامش الربح", f"{r['Profit Margin']:.1f}%")
+        c4.metric("نسبة السيولة", f"{r['Current Ratio']:.2f}")
+
+        fig = px.bar(x=['الإيرادات', 'صافي الربح'], y=[r['Revenue'], r['Net Profit']], 
+                     color=['إيرادات', 'ربح'], color_discrete_sequence=['#1f77b4', '#ff7f0e'])
+        st.plotly_chart(fig, use_container_width=True)
+
+        if st.button("توليد التقرير التنفيذي 🤖"):
+            prompt = f"حلل مالياً بالعربية كخبير CFO: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            try:
+                res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+                st.markdown("### 📝 تقرير الخبير المالي:")
+                st.info(res.json()['candidates'][0]['content']['parts'][0]['text'])
+            except:
+                st.error("خطأ في الاتصال بمفتاح الـ API.")
+
+else:
+    col1, col2 = st.columns(2)
+    with col1: f1 = st.file_uploader("📂 ملف السنة السابقة", type="xlsx")
+    with col2: f2 = st.file_uploader("📂 ملف السنة الحالية", type="xlsx")
+    
+    if f1 and f2 and api_key:
+        df1, df2 = pd.read_excel(f1), pd.read_excel(f2)
+        r1, r2 = calculate_ratios(df1), calculate_ratios(df2)
+        
+        st.markdown("### ⚖️ مقارنة الأداء السنوي (Variance Analysis)")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("صافي الربح", f"{r2['Net Profit']:,.0f}", f"{r2['Net Profit'] - r1['Net Profit']:,.0f}")
+        m2.metric("هامش الربح", f"{r2['Profit Margin']:.1f}%", f"{r2['Profit Margin'] - r1['Profit Margin']:.1f}%")
+        m3.metric("السيولة", f"{r2['Current Ratio']:.2f}", f"{r2['Current Ratio'] - r1['Current Ratio']:.2f}")
+        m4.metric("المديونية", f"{r2['Debt Ratio']:.1f}%", f"{r2['Debt Ratio'] - r1['Debt Ratio']:.1f}%", delta_color="inverse")
+
+        comp_df = pd.DataFrame({
+            'البند': ['الإيرادات', 'صافي الربح'],
+            'السابقة': [r1['Revenue'], r1['Net Profit']],
+            'الحالية': [r2['Revenue'], r2['Net Profit']]
+        }).melt(id_vars='البند', var_name='السنة', value_name='المبلغ')
+        fig = px.bar(comp_df, x='البند', y='المبلغ', color='السنة', barmode='group')
+        st.plotly_chart(fig, use_container_width=True)
+
+        if st.button("تحليل الفروقات والنمو 🚀"):
+            prompt = f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            try:
+                res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+                st.markdown("### 📝 التقرير المقارن الاستراتيجي:")
+                st.success(res.json()['candidates'][0]['content']['parts'][0]['text'])
+            except:
+                st.error("خطأ في الاتصال بمفتاح الـ API.")
