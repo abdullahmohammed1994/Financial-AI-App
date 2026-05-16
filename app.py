@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import google.generativeai as genai
+import requests
 
 # 1. إعدادات المنصة الحديثة والمستقرة
 st.set_page_config(
@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. حقن واجهة مستقبلية فاخرة مستقرة (SaaS Dashboard Aesthetics)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Cairo', sans-serif;
@@ -62,10 +62,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. جلب المفتاح وتجهيز مكتبة جوجل بالشكل القياسي المضمون
+# 3. جلب المفتاح بأمان من الـ Secrets
 api_key = st.secrets.get("GEMINI_API_KEY", None)
-if api_key:
-    genai.configure(api_key=api_key)
 
 # ترويسة المنصة الفاخرة
 st.markdown("<h1 style='text-align: center; color: #fbbf24; font-weight: 800; margin-top: 20px;'>📊 Financial AI Auditor</h1>", unsafe_allow_html=True)
@@ -119,13 +117,19 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
 
         if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
             if api_key:
+                # الاستعلام المباشر عبر الرابط الرسمي المعتمد لعام 2026 لنموذج gemini-2.5-flash الهجين
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."}]}]}
+                
                 try:
-                    # استخدام الاسم والمسار الصريح والكامل لنموذج جيراد المعتمد رسمياً لتجنب أي خطأ في أرقام النسخ
-                    model = genai.GenerativeModel('models/gemini-1.5-flash')
-                    response = model.generate_content(f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%.")
-                    st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{response.text}</div>", unsafe_allow_html=True)
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    else:
+                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}). يرجى التأكد من كتابة المفتاح بشكل صحيح داخل Secrets.")
                 except Exception as e:
-                    st.error(f"حدث خطأ في الاتصال بالسيرفر: {str(e)}")
+                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
 
@@ -156,11 +160,17 @@ else:
 
         if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
             if api_key:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."}]}]}
+                
                 try:
-                    model = genai.GenerativeModel('models/gemini-1.5-flash')
-                    response = model.generate_content(f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}.")
-                    st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{response.text}</div>", unsafe_allow_html=True)
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    else:
+                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}). يرجى التأكد من كتابة المفتاح بشكل صحيح داخل Secrets.")
                 except Exception as e:
-                    st.error(f"حدث خطأ في الاتصال بالسيرفر: {str(e)}")
+                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
