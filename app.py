@@ -62,11 +62,10 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. جلب المفتاح بأمان وتجهيز مكتبة جوجل المستقرة
+# 3. جلب المفتاح وتجهيز مكتبة جوجل بالشكل القياسي المضمون
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 if api_key:
-    # إجبار المكتبة على استخدام api_version='v1' الرسمي لتفادي خطأ الـ v1beta نهائياً
-    genai.configure(api_key=api_key, client_options={'api_version': 'v1'})
+    genai.configure(api_key=api_key)
 
 # ترويسة المنصة الفاخرة
 st.markdown("<h1 style='text-align: center; color: #fbbf24; font-weight: 800; margin-top: 20px;'>📊 Financial AI Auditor</h1>", unsafe_allow_html=True)
@@ -121,12 +120,12 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
         if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
             if api_key:
                 try:
-                    # تم التغيير لـ gemini-1.5-flash كونه الموديل الأكثر استقراراً في v1
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    # استخدام الاسم والمسار الصريح والكامل لنموذج جيراد المعتمد رسمياً لتجنب أي خطأ في أرقام النسخ
+                    model = genai.GenerativeModel('models/gemini-1.5-flash')
                     response = model.generate_content(f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%.")
                     st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{response.text}</div>", unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"حدث خطأ في الاتصال: {str(e)}")
+                    st.error(f"حدث خطأ في الاتصال بالسيرفر: {str(e)}")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
 
@@ -158,10 +157,10 @@ else:
         if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
             if api_key:
                 try:
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('models/gemini-1.5-flash')
                     response = model.generate_content(f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}.")
                     st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{response.text}</div>", unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"حدث خطأ في الاتصال: {str(e)}")
+                    st.error(f"حدث خطأ في الاتصال بالسيرفر: {str(e)}")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
