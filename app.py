@@ -117,8 +117,8 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
 
         if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
             if api_key:
-                # تحديث الرابط إلى النسخة الرسمية المستقرة لعام 2026 لـ Gemini 1.5 Flash الأكثر توافقاً مع الحسابات المجانية
-                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                # الرابط الرسمي المصحح والمحدث لتجنب خطأ 404
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
                 headers = {'Content-Type': 'application/json'}
                 payload = {"contents": [{"parts": [{"text": f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."}]}]}
                 
@@ -127,9 +127,9 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
                     if res.status_code == 200:
                         st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
                     else:
-                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى توليد مفتاح جديد باستخدام VPN.")
+                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى مراجعة إعدادات Secrets.")
                 except:
-                    st.error("فشل محرك الاستعلام المالي، يرجى مراجعة صلاحية المفتاح.")
+                    st.error("فشل محرك الاستعلام المالي، يرجى مراجعة الاتصال.")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
 
@@ -160,7 +160,8 @@ else:
 
         if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
             if api_key:
-                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                # الرابط الرسمي المصحح والمحدث لتجنب خطأ 404
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
                 headers = {'Content-Type': 'application/json'}
                 payload = {"contents": [{"parts": [{"text": f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."}]}]}
                 
@@ -169,8 +170,8 @@ else:
                     if res.status_code == 200:
                         st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
                     else:
-                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى توليد مفتاح جديد باستخدام VPN.")
+                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى مراجعة إعدادات Secrets.")
                 except:
-                    st.error("فشل محرك الاستعلام المالي، يرجى مراجعة صلاحية المفتاح.")
+                    st.error("فشل محرك الاستعلام المالي، يرجى مراجعة الاتصال.")
             else:
                 st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
