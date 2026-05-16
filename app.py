@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. حقن واجهة مستقبلية فاخرة مستقرة (SaaS Dashboard Aesthetics)
+# 2. حقن تصميم مستقبلي فاخر مستقر (SaaS Dashboard Aesthetics)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
@@ -62,13 +62,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. جلب المفتاح بأمان من الـ Secrets (مع معالجة استباقية للأخطاء)
-api_key = None
-try:
-    if "GEMINI_API_KEY" in st.secrets:
-        api_key = st.secrets["GEMINI_API_KEY"]
-except:
-    pass
+# 3. جلب المفتاح بأمان من الـ Secrets
+api_key = st.secrets.get("GEMINI_API_KEY", None)
 
 # ترويسة المنصة الفاخرة
 st.markdown("<h1 style='text-align: center; color: #fbbf24; font-weight: 800; margin-top: 20px;'>📊 Financial AI Auditor</h1>", unsafe_allow_html=True)
@@ -122,11 +117,17 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
 
         if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
             if api_key:
-                prompt = f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+                # تحديث الرابط إلى النسخة الرسمية المستقرة لعام 2026 لـ Gemini 1.5 Flash الأكثر توافقاً مع الحسابات المجانية
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."}]}]}
+                
                 try:
-                    res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
-                    st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    else:
+                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى توليد مفتاح جديد باستخدام VPN.")
                 except:
                     st.error("فشل محرك الاستعلام المالي، يرجى مراجعة صلاحية المفتاح.")
             else:
@@ -159,11 +160,16 @@ else:
 
         if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
             if api_key:
-                prompt = f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {"contents": [{"parts": [{"text": f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."}]}]}
+                
                 try:
-                    res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
-                    st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    res = requests.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
+                    else:
+                        st.error(f"جوجل ترفض المفتاح. رمز الخطأ من السيرفر: {res.status_code}. يرجى توليد مفتاح جديد باستخدام VPN.")
                 except:
                     st.error("فشل محرك الاستعلام المالي، يرجى مراجعة صلاحية المفتاح.")
             else:
