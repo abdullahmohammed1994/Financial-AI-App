@@ -150,4 +150,23 @@ else:
         r1, r2 = calculate_ratios(df1), calculate_ratios(df2)
         
         st.markdown("### ⚖️ مقارنة الأداء السنوي (Variance Analysis)")
-        m1, m
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("صافي الربح", f"{r2['Net Profit']:,.0f}", f"{r2['Net Profit'] - r1['Net Profit']:,.0f}")
+        m2.metric("هامش الربح", f"{r2['Profit Margin']:.1f}%", f"{r2['Profit Margin'] - r1['Profit Margin']:.1f}%")
+        m3.metric("السيولة", f"{r2['Current Ratio']:.2f}", f"{r2['Current Ratio'] - r1['Current Ratio']:.2f}")
+        m4.metric("المديونية", f"{r2['Debt Ratio']:.1f}%", f"{r2['Debt Ratio'] - r1['Debt Ratio']:.1f}%", delta_color="inverse")
+
+        # الرسم البياني المقارن
+        comp_df = pd.DataFrame({
+            'البند': ['الإيرادات', 'صافي الربح'],
+            'السابقة': [r1['Revenue'], r1['Net Profit']],
+            'الحالية': [r2['Revenue'], r2['Net Profit']]
+        }).melt(id_vars='البند', var_name='السنة', value_name='المبلغ')
+        fig = px.bar(comp_df, x='البند', y='المبلغ', color='السنة', barmode='group', color_discrete_sequence=['#AEC6CF', '#d4af37'])
+        st.plotly_chart(fig, use_container_width=True)
+
+        if st.button("تحليل الفروقات والنمو 🚀"):
+            prompt = f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+            st.markdown(f"<div class='report-container'><h3>📝 التقرير المقارن الاستراتيجي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
