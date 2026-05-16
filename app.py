@@ -3,11 +3,11 @@ import pandas as pd
 import requests
 import plotly.express as px
 
-# 1. إعدادات الصفحة الرسمية (تضمن التوافق التام)
+# 1. إعدادات الصفحة الرسمية المستقرة
 st.set_page_config(page_title="Financial AI Auditor", layout="wide")
 
-# عنوان رئيسي ضخم وواضح
-st.title("🏦 Financial AI Auditor - لوحة التحكم الاحترافية")
+# عنوان رئيسي واضح
+st.title("🏦 Financial AI Auditor")
 st.subheader("نظام الرقابة المالية الذكي | الاستشارات الاستراتيجية الآلية")
 st.markdown("---")
 
@@ -37,7 +37,7 @@ def calculate_ratios(df):
 
 # --- القائمة الجانبية المستقرة ---
 with st.sidebar:
-    st.header("⚙️ الإعدادات")
+    st.header("⚙️ لوحة التحكم")
     api_key = st.text_input("🔑 مفتاح API الخاص بك", type="password")
     mode = st.radio("📊 نمط العمل المالي:", ["تحليل مفرد", "مقارنة سنتين"])
     st.markdown("---")
@@ -57,8 +57,10 @@ if mode == "تحليل مفرد":
         c3.metric("هامش الربح", f"{r['Profit Margin']:.1f}%")
         c4.metric("نسبة السيولة", f"{r['Current Ratio']:.2f}")
 
+        # رسم بياني متناسق مع الثيم
         fig = px.bar(x=['الإيرادات', 'صافي الربح'], y=[r['Revenue'], r['Net Profit']], 
-                     color=['إيرادات', 'ربح'], color_discrete_sequence=['#1f77b4', '#ff7f0e'])
+                     color=['إيرادات', 'ربح'], color_discrete_sequence=['#415a77', '#d4af37'])
+        fig.update_layout(template="plotly_dark")
         st.plotly_chart(fig, use_container_width=True)
 
         if st.button("توليد التقرير التنفيذي 🤖"):
@@ -66,6 +68,7 @@ if mode == "تحليل مفرد":
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
             try:
                 res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+                st.markdown("---")
                 st.markdown("### 📝 تقرير الخبير المالي:")
                 st.info(res.json()['candidates'][0]['content']['parts'][0]['text'])
             except:
@@ -87,12 +90,14 @@ else:
         m3.metric("السيولة", f"{r2['Current Ratio']:.2f}", f"{r2['Current Ratio'] - r1['Current Ratio']:.2f}")
         m4.metric("المديونية", f"{r2['Debt Ratio']:.1f}%", f"{r2['Debt Ratio'] - r1['Debt Ratio']:.1f}%", delta_color="inverse")
 
+        # رسم بياني مقارن متناسق
         comp_df = pd.DataFrame({
             'البند': ['الإيرادات', 'صافي الربح'],
             'السابقة': [r1['Revenue'], r1['Net Profit']],
             'الحالية': [r2['Revenue'], r2['Net Profit']]
         }).melt(id_vars='البند', var_name='السنة', value_name='المبلغ')
-        fig = px.bar(comp_df, x='البند', y='المبلغ', color='السنة', barmode='group')
+        fig = px.bar(comp_df, x='البند', y='المبلغ', color='السنة', barmode='group', color_discrete_sequence=['#415a77', '#d4af37'])
+        fig.update_layout(template="plotly_dark")
         st.plotly_chart(fig, use_container_width=True)
 
         if st.button("تحليل الفروقات والنمو 🚀"):
@@ -100,6 +105,7 @@ else:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
             try:
                 res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+                st.markdown("---")
                 st.markdown("### 📝 التقرير المقارن الاستراتيجي:")
                 st.success(res.json()['candidates'][0]['content']['parts'][0]['text'])
             except:
