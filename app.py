@@ -13,7 +13,7 @@ st.set_page_config(
 # 2. حقن واجهة مستقبلية فاخرة مستقرة (SaaS Dashboard Aesthetics)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;800&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Cairo', sans-serif;
@@ -62,8 +62,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. جلب المفتاح بأمان من الـ Secrets
-api_key = st.secrets.get("GEMINI_API_KEY", None)
+# 3. جلب المفتاح التلقائي من الـ Secrets
+secrets_key = st.secrets.get("GEMINI_API_KEY", None)
 
 # ترويسة المنصة الفاخرة
 st.markdown("<h1 style='text-align: center; color: #fbbf24; font-weight: 800; margin-top: 20px;'>📊 Financial AI Auditor</h1>", unsafe_allow_html=True)
@@ -74,7 +74,6 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 mode = st.radio("حدد نطاق التحليل المطلوب:", ["🔎 معالجة كشوفات سنة منفردة", "⚖️ المقارنة الهيكلية وتحليل التباين بين سنتين"], horizontal=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# وظائف محرك المعالجة المالي بالبايثون
 def get_financial_value(df, keywords):
     df_lower = df.copy()
     df_lower.iloc[:, 0] = df_lower.iloc[:, 0].astype(str).str.lower()
@@ -98,7 +97,9 @@ def calculate_ratios(df):
         "Debt Ratio": (liabilities / assets * 100) if assets != 0 else 0
     }
 
-# --- تشغيل الأنماط المحدثة ---
+# متغير لحمل المفتاح النشط
+active_api_key = secrets_key
+
 if mode == "🔎 معالجة كشوفات سنة منفردة":
     file = st.file_uploader("📂 ارفع ملف القائمة المالية", type="xlsx")
     if file:
@@ -109,68 +110,4 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
         col1.markdown(f"<div class='dashboard-card'><div class='card-title'>إجمالي الإيرادات</div><div class='card-value'>{r['Revenue']:,.0f}</div></div>", unsafe_allow_html=True)
         col2.markdown(f"<div class='dashboard-card'><div class='card-title'>صافي الربح</div><div class='card-value'>{r['Net Profit']:,.0f}</div></div>", unsafe_allow_html=True)
         col3.markdown(f"<div class='dashboard-card'><div class='card-title'>هامش الربح التشغيلي</div><div class='card-value'>{r['Profit Margin']:.1f}%</div></div>", unsafe_allow_html=True)
-        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل السيولة المتداولة</div><div class='card-value'>{r['Current Ratio']:.2f}</div></div>", unsafe_allow_html=True)
-
-        fig = px.bar(x=['الإيرادات', 'صافي الربح'], y=[r['Revenue'], r['Net Profit']], color=['الإيرادات', 'صافي الربح'], color_discrete_sequence=['#475569', '#fbbf24'])
-        fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
-
-        if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
-            if api_key:
-                # الاستعلام المباشر عبر الرابط الرسمي المعتمد لعام 2026 لنموذج gemini-2.5-flash الهجين
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-                headers = {'Content-Type': 'application/json'}
-                payload = {"contents": [{"parts": [{"text": f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%."}]}]}
-                
-                try:
-                    res = requests.post(url, json=payload, headers=headers)
-                    if res.status_code == 200:
-                        st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
-                    else:
-                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}). يرجى التأكد من كتابة المفتاح بشكل صحيح داخل Secrets.")
-                except Exception as e:
-                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
-            else:
-                st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
-
-else:
-    c_col1, c_col2 = st.columns(2)
-    with c_col1: f1 = st.file_uploader("📂 ملف السنة السابقة", type="xlsx", key="prev_year")
-    with c_col2: f2 = st.file_uploader("📂 ملف السنة الحالية", type="xlsx", key="curr_year")
-    
-    if f1 and f2:
-        df1, df2 = pd.read_excel(f1), pd.read_excel(f2)
-        r1, r2 = calculate_ratios(df1), calculate_ratios(df2)
-        
-        col1, col2, col3, col4 = st.columns(4)
-        col1.markdown(f"<div class='dashboard-card'><div class='card-title'>نمو صافي الأرباح</div><div class='card-value'>{r2['Net Profit'] - r1['Net Profit']:+,.0f}</div></div>", unsafe_allow_html=True)
-        col2.markdown(f"<div class='dashboard-card'><div class='card-title'>انحراف هامش الربح</div><div class='card-value'>{r2['Profit Margin'] - r1['Profit Margin']:+.1f}%</div></div>", unsafe_allow_html=True)
-        col3.markdown(f"<div class='dashboard-card'><div class='card-title'>تغير كفاءة السيولة</div><div class='card-value'>{r2['Current Ratio'] - r1['Current Ratio']:+.2f}</div></div>", unsafe_allow_html=True)
-        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل مديونية الحالية</div><div class='card-value'>{r2['Debt Ratio']:.1f}%</div></div>", unsafe_allow_html=True)
-
-        comp_df = pd.DataFrame({
-            'البند المالي': ['الإيرادات', 'صافي الربح'],
-            'السنة السابقة': [r1['Revenue'], r1['Net Profit']],
-            'السنة الحالية': [r2['Revenue'], r2['Net Profit']]
-        }).melt(id_vars='البند المالي', var_name='الفترة الزمنية', value_name='القيمة المالية')
-        
-        fig = px.bar(comp_df, x='البند المالي', y='القيمة المالية', color='الفترة الزمنية', barmode='group', color_discrete_sequence=['#475569', '#fbbf24'])
-        fig.update_layout(template="plotly_dark", plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig, use_container_width=True)
-
-        if st.button("بدء تحليل التباين والنمو الهيكلي 🚀"):
-            if api_key:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-                headers = {'Content-Type': 'application/json'}
-                payload = {"contents": [{"parts": [{"text": f"قارن بالعربية كخبير CFO: السنة الماضية ربح {r1['Net Profit']} الحالية {r2['Net Profit']}."}]}]}
-                
-                try:
-                    res = requests.post(url, json=payload, headers=headers)
-                    if res.status_code == 200:
-                        st.markdown(f"<div class='ai-insight-box'><h3>📋 التقرير المقارن التحليلي للنمو:</h3>{res.json()['candidates'][0]['content']['parts'][0]['text']}</div>", unsafe_allow_html=True)
-                    else:
-                        st.error(f"خطأ في الاستجابة من جوجل (رمز الخطأ: {res.status_code}). يرجى التأكد من كتابة المفتاح بشكل صحيح داخل Secrets.")
-                except Exception as e:
-                    st.error(f"فشل محرك الاستعلام المالي: {str(e)}")
-            else:
-                st.error("⚠️ لم يتم العثور على مفتاح الـ API المشفر في إعدادات السيرفر السريّة.")
+        col4.markdown(f"<div class='dashboard-card'><div class='card-title'>معدل السيولة المتدا
