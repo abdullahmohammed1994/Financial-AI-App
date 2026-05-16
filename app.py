@@ -10,10 +10,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. حقن تصميم مستقبلي فاخر مستقر (SaaS Dashboard Aesthetics)
+# 2. حقن واجهة مستقبلية فاخرة مستقرة (SaaS Dashboard Aesthetics)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght=400;600;800&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Cairo', sans-serif;
@@ -65,7 +65,8 @@ st.markdown("""
 # 3. جلب المفتاح بأمان وتجهيز مكتبة جوجل المستقرة
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 if api_key:
-    genai.configure(api_key=api_key)
+    # إجبار المكتبة على استخدام api_version='v1' الرسمي لتفادي خطأ الـ v1beta نهائياً
+    genai.configure(api_key=api_key, client_options={'api_version': 'v1'})
 
 # ترويسة المنصة الفاخرة
 st.markdown("<h1 style='text-align: center; color: #fbbf24; font-weight: 800; margin-top: 20px;'>📊 Financial AI Auditor</h1>", unsafe_allow_html=True)
@@ -120,7 +121,7 @@ if mode == "🔎 معالجة كشوفات سنة منفردة":
         if st.button("توليد الرؤية والتحليل الاستراتيجي الفوري 🤖"):
             if api_key:
                 try:
-                    # الاستدعاء الكلاسيكي المستقر 100%
+                    # تم التغيير لـ gemini-1.5-flash كونه الموديل الأكثر استقراراً في v1
                     model = genai.GenerativeModel('gemini-1.5-flash')
                     response = model.generate_content(f"حلل مالياً بالعربية كخبير CFO محترف جداً: إيرادات {r['Revenue']}، ربح {r['Net Profit']}، هامش {r['Profit Margin']:.1f}%.")
                     st.markdown(f"<div class='ai-insight-box'><h3>📋 مخرجات تقرير الذكاء الاصطناعي:</h3>{response.text}</div>", unsafe_allow_html=True)
